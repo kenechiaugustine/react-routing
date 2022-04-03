@@ -4,6 +4,7 @@ import {
     Routes as Switch,
     Route,
     Link,
+    useParams,
 } from 'react-router-dom';
 
 export default function App() {
@@ -31,6 +32,8 @@ export default function App() {
 
                     <Route path='/shop' element={<Shop />} />
 
+                    <Route path='/shop/:id' element={<ShopDetail />} />
+
                     <Route path='/' element={<Home />} />
                 </Switch>
             </div>
@@ -39,12 +42,62 @@ export default function App() {
 }
 
 function Shop() {
+    useEffect(() => {
+        fetchItems();
+    }, []);
 
+    const [items, setItems] = useState([]);
 
+    const fetchItems = async () => {
+        const data = await fetch(
+            'https://fortnite-api.theapinetwork.com/store/get'
+        );
+        const items = await data.json();
+        console.log(items.data[0]);
+        setItems(items.data);
+    };
 
     return (
         <div>
-            <h1> SHOP PAGE </h1>
+            {items.map((item) => (
+                <ul>
+                    <li key={item.itemId}>
+                        <Link to={`/shop/${item.itemId}`}>
+                            {item.item.name}
+                        </Link>
+                    </li>
+                </ul>
+            ))}
+        </div>
+    );
+}
+
+function ShopDetail() {
+    const { id } = useParams();
+
+    useEffect(() => {
+        fetchItem();
+    }, []);
+
+    const [item, setItem] = useState({
+      images: {}
+    });
+
+    const fetchItem = async () => {
+        const data = await fetch(
+            `https://fortnite-api.theapinetwork.com/item/get?id=${id}`
+        );
+        const item = await data.json();
+        setItem(item.data);
+        console.log(item.data);
+    };
+
+    return (
+        <div>
+            <h1>Shop Details</h1>
+            <h2>Name: {item.item.images.information ? item.item.images.information : 'nulll' }</h2>
+             {/*<p>desc: {item.item.description}</p>
+            <img src={item.item.images.information} alt='items'/> */}
         </div>
     );
 }
